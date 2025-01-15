@@ -1,6 +1,12 @@
 # Linux 一键安装 mihomo (新版clash、Clash Meta）
 
-Linux 一键安装 mihomo (新版clash、Clash Meta）   
+Linux 一键安装 mihomo (新版clash、Clash Meta）
+
+一键安装 clash
+
+ 一键安装Clash Meta
+
+一键安装 mihomo
 
 ## 环境要求
 
