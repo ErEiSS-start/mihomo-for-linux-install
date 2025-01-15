@@ -8,7 +8,7 @@ Linux 一键安装 mihomo (新版clash、Clash Meta）
 
 具备 bash 和 systemd 的系统环境。
 
-已适配：CentOS 7.x
+已适配：CentOS 7.x Rocky linux ,Debian和Ubuntu 稍微改动一下bashrc路径即可
 
 ## 开始使用
 
