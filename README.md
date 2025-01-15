@@ -1,4 +1,4 @@
-# Linux 一键安装 mihomo (新版clash、Clash Meta）
+# Linux 一键安装 mihomo (新版clash、Clash Meta） 支持订阅
 
 Linux 一键安装 mihomo (新版clash、Clash Meta）
 
