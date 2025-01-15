@@ -8,6 +8,8 @@ Linux 一键安装 mihomo (新版clash、Clash Meta）
 
 一键安装 mihomo
 
+clash-verge/Clash Meta 等linux 使用的都是mihomo 内核  我这里使用的是[mihomo](https://github.com/MetaCubeX/mihomo/releases) +[metacubexd](https://github.com/MetaCubeX/metacubexd/releases)
+
 ## 环境要求
 
 需要 root 或 sudo 权限。
@@ -53,15 +55,15 @@ systemctl restart mihomo
 
 ## 进入面板
 
-输入 服务器ip+9090/ui即可
+输入 服务器ip+9090/ui 
 
 ![image-20250115152153456](./assets/image-20250115152153456.png)
 
-点击添加
+点击添加即可
 
 ![image-20250115152213490](./assets/image-20250115152213490.png)
 
-即可
+
 
 ![image-20250115152238071](./assets/image-20250115152238071.png)
 
@@ -70,3 +72,16 @@ systemctl restart mihomo
 [@nelvko](https://github.com/nelvko)
 
 [clash-for-linux-install](https://github.com/nelvko/clash-for-linux-install)
+
+## 引用
+
+[metacubexd](https://github.com/MetaCubeX/metacubexd/releases)
+
+[mihomo](https://github.com/MetaCubeX/mihomo/releases)
+
+[clash-for-linux-install](https://github.com/nelvko/clash-for-linux-install)
+
+## 特别声明
+
+1. 编写本项目主要目的为学习和研究 `Shell` 编程，不得将本项目中任何内容用于违反国家/地区/组织等的法律法规或相关规定的其他用途。
+2. 本项目保留随时对免责声明进行补充或更改的权利，直接或间接使用本项目内容的个人或组织，视为接受本项目的特别声明。
