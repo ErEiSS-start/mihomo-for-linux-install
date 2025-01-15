@@ -1,12 +1,11 @@
 # Linux 一键安装 mihomo (新版clash、Clash Meta） 支持订阅
 
 Linux 一键安装 mihomo (新版clash、Clash Meta）
+一键安装Clash
 
-一键安装 clash
+一键安装Clash Meta
 
- 一键安装Clash Meta
-
-一键安装 mihomo
+一键安装mihomo
 
 clash-verge/Clash Meta 等linux 使用的都是mihomo 内核  我这里使用的是[mihomo](https://github.com/MetaCubeX/mihomo/releases) +[metacubexd](https://github.com/MetaCubeX/metacubexd/releases)
 
