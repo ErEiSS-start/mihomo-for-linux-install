@@ -23,7 +23,7 @@ clash-verge/Clash Meta 等linux 使用的都是mihomo 内核  我这里使用的
 一键安装 
 
 ```
-git clone https://githubfast.com/tianyufeng925/mihomo-for-linux-install.git && cd mihomo-for-linux-install && sudo bash -c '. install.sh; exec bash' 
+git clone https://githubfast.com/ErEiSS-start/mihomo-for-linux-install.git && cd mihomo-for-linux-install && sudo bash -c '. install.sh; exec bash' 
 ```
 
 
