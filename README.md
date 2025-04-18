@@ -26,6 +26,9 @@ clash-verge/Clash Meta 等linux 使用的都是mihomo 内核  我这里使用的
 git clone https://githubfast.com/ErEiSS-start/mihomo-for-linux-install.git && cd mihomo-for-linux-install && sudo bash -c '. install.sh; exec bash' 
 ```
 
+```
+git clone https://kkgithub.com/ErEiSS-start/mihomo-for-linux-install.git && cd mihomo-for-linux-install && sudo bash -c '. install.sh; exec bash'
+```
 
 
 上述脚本已使用[代理加速下载](https://githubfast.com)，如克隆失败请自行更换。
