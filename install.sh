@@ -1,120 +1,126 @@
 #!/bin/bash
+
 # 设置变量
 MihomoDir="/etc/mihomo"
 DistFile1="mihomo-linux-amd64-alpha-c7661d7.gz"
 DistFile2="compressed-dist.tgz"
 ConfigFile="config.yaml"
 CountryFile="Country.mmdb"
-# 检查 /etc/mihomo 目录是否存在
+
+# 检查并安装必要工具
+echo "检查依赖工具..."
+sudo apt update
+sudo apt install -y curl tar gzip lsb-release net-tools
+
+# 检查 /etc/mihomo 是否存在
 if [ -d "$MihomoDir" ]; then
-    read -p "/etc/mihomo 目录已存在，是否覆盖？[y/N]: " choice
+    read -p "$MihomoDir 已存在，是否覆盖？[y/N]: " choice
     if [[ ! "$choice" =~ ^[Yy]$ ]]; then
         echo "取消安装"
         exit 0
     fi
-    echo "正在覆盖 /etc/mihomo 目录..."
-    rm -rf "$MihomoDir"
+    echo "正在覆盖 $MihomoDir ..."
+    sudo rm -rf "$MihomoDir"
 fi
-# 创建 /etc/mihomo 目录
-echo "创建目录 /etc/mihomo..."
-mkdir -p "$MihomoDir"
-# 检查并终止正在运行的 mihomo 进程
-echo "发现正在运行的 mihomo 进程，正在终止..."
+
+# 创建目录
+echo "创建目录 $MihomoDir..."
+sudo mkdir -p "$MihomoDir"
+
+# 停止正在运行的 mihomo
+echo "尝试终止正在运行的 mihomo..."
 pid=$(pgrep mihomo)
 if [ -n "$pid" ]; then
-    kill -9 "$pid"
+    sudo kill -9 "$pid"
 fi
-# 解压文件
-echo "解压文件 $DistFile1 和 $DistFile2..."
+
+# 解压 mihomo 主程序
+echo "解压 $DistFile1..."
 if [ -f "$DistFile1" ]; then
-    gunzip -c "$DistFile1" > "$MihomoDir/mihomo"
-    chmod +x "$MihomoDir/mihomo"
+    gunzip -c "$DistFile1" | sudo tee "$MihomoDir/mihomo" > /dev/null
+    sudo chmod +x "$MihomoDir/mihomo"
 else
-    echo "找不到文件 $DistFile1，跳过解压"
+    echo "❌ 未找到 $DistFile1，跳过"
 fi
+
+# 解压 UI 资源
+echo "解压 UI 文件 $DistFile2..."
 if [ -f "$DistFile2" ]; then
-    mkdir -p "$MihomoDir/ui"
-    tar -xvzf "$DistFile2" -C "$MihomoDir/ui"
+    sudo mkdir -p "$MihomoDir/ui"
+    sudo tar -xvzf "$DistFile2" -C "$MihomoDir/ui"
 else
-    echo "找不到文件 $DistFile2，跳过解压"
+    echo "❌ 未找到 $DistFile2，跳过"
 fi
-# 复制 config.yaml 文件到 /etc/mihomo
-if [ -f "$ConfigFile" ]; then
-    cp "$ConfigFile" "$MihomoDir/"
-else
-    echo "找不到 config.yaml，跳过复制"
-fi
-# 复制 Country.mmdb 到 /etc/mihomo
-if [ -f "$CountryFile" ]; then
-    echo "复制 $CountryFile 到 $MihomoDir..."
-    sudo cp "$CountryFile" "$MihomoDir/"
-else
-    echo "找不到文件 $CountryFile，跳过复制"
-fi
-# 创建 systemd 配置文件
-echo "创建 systemd 配置文件..."
-cat > /etc/systemd/system/mihomo.service << EOF
+
+# 复制配置文件
+[ -f "$ConfigFile" ] && sudo cp "$ConfigFile" "$MihomoDir/" || echo "⚠️ config.yaml 未找到，跳过"
+[ -f "$CountryFile" ] && sudo cp "$CountryFile" "$MihomoDir/" || echo "⚠️ Country.mmdb 未找到，跳过"
+
+# 创建 systemd 服务
+echo "写入 mihomo systemd 服务..."
+sudo tee /etc/systemd/system/mihomo.service > /dev/null << EOF
 [Unit]
-Description=mihomo Daemon, Another Clash Kernel.
-After=network.target NetworkManager.service systemd-networkd.service iwd.service
+Description=mihomo Daemon
+After=network.target NetworkManager.service systemd-networkd.service
+
 [Service]
 Type=simple
 LimitNPROC=500
 LimitNOFILE=1000000
-CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW CAP_NET_BIND_SERVICE CAP_SYS_TIME CAP_SYS_PTRACE CAP_DAC_READ_SEARCH CAP_DAC_OVERRIDE
-AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW CAP_NET_BIND_SERVICE CAP_SYS_TIME CAP_SYS_PTRACE CAP_DAC_READ_SEARCH CAP_DAC_OVERRIDE
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW CAP_NET_BIND_SERVICE
 Restart=always
 ExecStartPre=/usr/bin/sleep 1s
-ExecStart=/etc/mihomo/mihomo -d /etc/mihomo
+ExecStart=$MihomoDir/mihomo -d $MihomoDir
 ExecReload=/bin/kill -HUP \$MAINPID
+
 [Install]
 WantedBy=multi-user.target
 EOF
-# 重新加载 systemd 配置
-echo "重新加载 systemd 配置..."
-systemctl daemon-reload
-# 启动 mihomo 服务
-echo "启动 mihomo 服务..."
-systemctl start mihomo
-# 创建代理控制脚本
-echo "创建代理控制脚本..."
-cat > /etc/mihomo/clash_control.sh << 'EOF'
+
+# 启用并启动服务
+sudo systemctl daemon-reload
+sudo systemctl enable mihomo
+sudo systemctl start mihomo
+
+# 创建控制脚本
+echo "创建 clash 控制脚本..."
+sudo tee "$MihomoDir/clash_control.sh" > /dev/null << 'EOF'
 #!/bin/bash
-# shellcheck disable=SC2015
-# shellcheck disable=SC2155
-# clash快捷指令
 function clashon() {
-    sudo systemctl start mihomo && echo '已开启代理环境' || echo '启动失败: 执行 "systemctl status mihomo" 查看日志' || return 1
+    sudo systemctl start mihomo && echo '✅ 代理已开启' || echo '❌ 启动失败，请检查 systemctl status mihomo'
     export http_proxy=http://127.0.0.1:7890
     export https_proxy=http://127.0.0.1:7890
     export HTTP_PROXY=http://127.0.0.1:7890
     export HTTPS_PROXY=http://127.0.0.1:7890
 }
 function clashoff() {
-    sudo systemctl stop mihomo && echo '已关闭代理环境' || echo '关闭失败: 执行 "systemctl status mihomo" 查看日志' || return 1
-    unset http_proxy
-    unset https_proxy
-    unset HTTP_PROXY
-    unset HTTPS_PROXY
+    sudo systemctl stop mihomo && echo '🛑 代理已关闭' || echo '❌ 关闭失败'
+    unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY
 }
 function clashui() {
     local local_ip=$(hostname -I | awk '{print $1}')
     local public_ip=$(curl -s ifconfig.me)
     local port=7890
-    echo "内网 UI 地址: http://$local_ip:$port/ui"
-    echo "公网 UI 地址: http://$public_ip:$port/ui"
+    echo "📡 内网 UI: http://$local_ip:$port/ui"
+    echo "🌍 公网 UI: http://$public_ip:$port/ui"
 }
 EOF
-# 给脚本加上执行权限
-chmod 755 /etc/mihomo/clash_control.sh
-# 添加到 /etc/bash.bashrc 中（适用于Ubuntu）
-echo "将代理控制命令添加到 /etc/bash.bashrc..."
-echo "source /etc/mihomo/clash_control.sh" >> /etc/bash.bashrc
-# 重新加载 ~/.bashrc 配置
-source ~/.bashrc
-echo "安装完成！可以通过以下命令控制代理："
-echo "- 启动代理环境: clashon"
-echo "- 关闭代理环境: clashoff"
-echo "- 查看 Web 面板地址: clashui"
-echo "注意：执行代理控制命令时需要管理员权限（sudo）。"
+
+# 设置执行权限
+sudo chmod +x "$MihomoDir/clash_control.sh"
+
+# 添加到当前用户 bashrc
+echo "添加代理控制命令到 ~/.bashrc..."
+if ! grep -q "source $MihomoDir/clash_control.sh" ~/.bashrc; then
+    echo "source $MihomoDir/clash_control.sh" >> ~/.bashrc
+    source ~/.bashrc
+fi
+
+# 启动代理
 clashon
+
+echo -e "\n🎉 安装完成！使用以下命令控制代理："
+echo "- 启用代理: \e[1mclashon\e[0m"
+echo "- 关闭代理: \e[1mclashoff\e[0m"
+echo "- 查看 UI 地址: \e[1mclashui\e[0m"
